@@ -1,0 +1,11 @@
+.git
+Dockerfile
+*.o
+*.a
+*.exe
+.idea
+.dockerignore
+.gitignore
+README.md
+docker-compose.yaml
+.env.example
