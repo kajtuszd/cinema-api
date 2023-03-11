@@ -2,10 +2,11 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/kajtuszd/cinema-api/app/controllers"
 	"github.com/kajtuszd/cinema-api/app/database"
 	"github.com/kajtuszd/cinema-api/app/middleware"
-	"github.com/kajtuszd/cinema-api/app/models"
-	"net/http"
+	"github.com/kajtuszd/cinema-api/app/repositories"
+	"github.com/kajtuszd/cinema-api/app/services"
 )
 
 func main() {
@@ -20,32 +21,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
 
-	r.GET("/", func(c *gin.Context) {
-		var users []models.User
-		db.DB().Find(&users)
+	userRepo := repositories.New(db.DB())
+	userService := services.New(userRepo)
+	userController := controllers.New(userService)
 
-		c.JSON(http.StatusOK, users)
-	})
-
-	r.POST("/users", func(c *gin.Context) {
-		var user models.User
-		if err := c.ShouldBindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		if err := db.DB().Create(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, user)
-	})
+	r.GET("/users", userController.GetAllUsers)
 
 	err = db.Migrate()
 	if err != nil {
