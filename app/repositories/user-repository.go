@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"github.com/kajtuszd/cinema-api/app/models"
 	"gorm.io/gorm"
 )
@@ -39,6 +40,9 @@ func (r *userRepository) GetByUsername(username string) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, models.ErrUserNotFound
+		}
 		return nil, err
 	}
 	return &user, nil

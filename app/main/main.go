@@ -32,6 +32,11 @@ func main() {
 	userController := controllers.New(userService)
 
 	r.GET("/users", userController.GetAllUsers)
+	r.GET("/users/:username", userController.GetUser)
+	r.POST("/users/", userController.CreateUser)
+	r.DELETE("/users/:username", userController.DeleteUser)
+	r.PUT("/users/:username", userController.UpdateUser)
+	r.PATCH("/users/:username", userController.UpdateUser)
 
 	err = db.Migrate()
 	if err != nil {

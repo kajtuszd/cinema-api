@@ -1,12 +1,12 @@
 package models
 
 import (
-	"gorm.io/gorm"
+	"errors"
 )
 
 type User struct {
-	gorm.Model
-	Username    string `json:"username" gorm:"primaryKey;unique"`
+	ID          uint   `json:"-" gorm:"primaryKey"`
+	Username    string `json:"username" gorm:"unique"`
 	FirstName   string `json:"first_name" gorm:"not null" validate:"max=30"`
 	LastName    string `json:"last_name" gorm:"not null" validate:"max=30"`
 	Email       string `json:"email" gorm:"not null;email;unique"`
@@ -14,3 +14,5 @@ type User struct {
 	Password    string `json:"password" gorm:"not null" validate:"password"`
 	IsModerator bool   `json:"is_moderator" gorm:"default:false"`
 }
+
+var ErrUserNotFound = errors.New("user not found")
