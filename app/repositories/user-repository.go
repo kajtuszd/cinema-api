@@ -3,6 +3,7 @@ package repositories
 import (
 	"errors"
 	"github.com/kajtuszd/cinema-api/app/models"
+	"github.com/kajtuszd/cinema-api/app/utils"
 	"gorm.io/gorm"
 )
 
@@ -25,6 +26,11 @@ func New(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Save(user models.User) error {
+	hash, _ := utils.HashPassword(user.Password)
+	if !utils.CheckPasswordHash(user.Password, hash) {
+		return utils.PasswordHashError
+	}
+	user.Password = hash
 	return r.db.Create(&user).Error
 }
 
