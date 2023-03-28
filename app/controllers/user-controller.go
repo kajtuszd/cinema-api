@@ -16,6 +16,7 @@ type UserController interface {
 	DeleteUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
 	handleUserError(ctx *gin.Context, err error) error
+	Validate(ctx *gin.Context)
 }
 
 type userController struct {
@@ -86,6 +87,8 @@ func (c *userController) LoginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	ctx.SetSameSite(http.SameSiteLaxMode)
+	ctx.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "user logged successfully",
 		"token":   token})
@@ -119,4 +122,11 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
+}
+
+func (c *userController) Validate(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": user,
+	})
 }

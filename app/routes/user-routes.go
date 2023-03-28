@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kajtuszd/cinema-api/app/controllers"
 	"github.com/kajtuszd/cinema-api/app/database"
+	"github.com/kajtuszd/cinema-api/app/middleware"
 	"github.com/kajtuszd/cinema-api/app/repositories"
 	"github.com/kajtuszd/cinema-api/app/services"
 )
@@ -15,6 +16,7 @@ func InitializeRoutes(r *gin.Engine, db *database.GormDatabase) {
 	authRoutes := r.Group("/auth/")
 	{
 		authRoutes.POST("login/", userController.LoginUser)
+		authRoutes.GET("validate/", middleware.JWTAuth(db), userController.Validate)
 	}
 	userRoutes := r.Group("/users/")
 	{
