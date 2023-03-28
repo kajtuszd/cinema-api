@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/kajtuszd/cinema-api/app/models"
 	"github.com/kajtuszd/cinema-api/app/services"
@@ -13,13 +12,21 @@ type UserController interface {
 	GetUser(ctx *gin.Context)
 	GetAllUsers(ctx *gin.Context)
 	CreateUser(ctx *gin.Context)
+	LoginUser(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
 	handleUserError(ctx *gin.Context, err error) error
+	Validate(ctx *gin.Context)
+	LogoutUser(ctx *gin.Context)
 }
 
 type userController struct {
 	userService services.UserService
+}
+
+type LoginForm struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 func New(service services.UserService) UserController {
@@ -68,7 +75,24 @@ func (c *userController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusCreated, gin.H{"message": "user created successfully"})
+}
+
+func (c *userController) LoginUser(ctx *gin.Context) {
+	var input LoginForm
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	token, err := c.userService.CheckLogin(input.Username, input.Password)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.SetSameSite(http.SameSiteLaxMode)
+	ctx.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "user logged successfully",
+		"token":   token})
 }
 
 func (c *userController) DeleteUser(ctx *gin.Context) {
@@ -87,7 +111,6 @@ func (c *userController) DeleteUser(ctx *gin.Context) {
 func (c *userController) UpdateUser(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := c.userService.GetByUsername(username)
-	fmt.Println(user)
 	if err = c.handleUserError(ctx, err); err != nil {
 		return
 	}
@@ -95,10 +118,23 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println(user)
 	if err = c.userService.UpdateUser(*user); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
+}
+
+func (c *userController) Validate(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": user,
+	})
+}
+
+func (c *userController) LogoutUser(ctx *gin.Context) {
+	ctx.SetCookie("Authorization", "", -1, "", "", false, true)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "user logged out successfully",
+	})
 }

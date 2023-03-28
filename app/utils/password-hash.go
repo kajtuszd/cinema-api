@@ -16,3 +16,4 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 var PasswordHashError = errors.New("password hash error")
+var PasswordMismatchError = errors.New("password mismatch error")

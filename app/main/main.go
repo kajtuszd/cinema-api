@@ -21,7 +21,6 @@ func main() {
 	}
 
 	routes.InitializeRoutes(r, db)
-
 	err = db.Migrate()
 	if err != nil {
 		panic(err)
