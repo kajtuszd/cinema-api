@@ -13,7 +13,7 @@ type UserService interface {
 	DeleteUser(user models.User) error
 	GetByUsername(username string) (*models.User, error)
 	GetAllUsers() ([]models.User, error)
-	CheckLogin(username, password string) error
+	CheckLogin(username, password string) (string, error)
 }
 
 type userService struct {
@@ -46,15 +46,15 @@ func (service *userService) GetAllUsers() ([]models.User, error) {
 	return service.userRepo.GetAll()
 }
 
-func (service *userService) CheckLogin(username, password string) error {
+func (service *userService) CheckLogin(username, password string) (string, error) {
 	user, err := service.GetByUsername(username)
+	var token string
 	if err != nil {
-		return err
+		return token, err
 	}
 	if !utils.CheckPasswordHash(password, user.Password) {
-		return utils.PasswordMismatchError
+		return token, utils.PasswordMismatchError
 	}
-
-	// generate token
-	return nil
+	token, err = utils.GenerateToken(user)
+	return token, err
 }

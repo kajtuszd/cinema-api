@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/kajtuszd/cinema-api/app/models"
 	"github.com/kajtuszd/cinema-api/app/services"
@@ -82,12 +81,14 @@ func (c *userController) LoginUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := c.userService.CheckLogin(input.Username, input.Password)
+	token, err := c.userService.CheckLogin(input.Username, input.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "user logged successfully"})
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "user logged successfully",
+		"token":   token})
 }
 
 func (c *userController) DeleteUser(ctx *gin.Context) {
@@ -106,7 +107,6 @@ func (c *userController) DeleteUser(ctx *gin.Context) {
 func (c *userController) UpdateUser(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := c.userService.GetByUsername(username)
-	fmt.Println(user)
 	if err = c.handleUserError(ctx, err); err != nil {
 		return
 	}
@@ -114,7 +114,6 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println(user)
 	if err = c.userService.UpdateUser(*user); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
