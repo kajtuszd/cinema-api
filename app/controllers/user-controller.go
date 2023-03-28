@@ -17,6 +17,7 @@ type UserController interface {
 	UpdateUser(ctx *gin.Context)
 	handleUserError(ctx *gin.Context, err error) error
 	Validate(ctx *gin.Context)
+	LogoutUser(ctx *gin.Context)
 }
 
 type userController struct {
@@ -128,5 +129,12 @@ func (c *userController) Validate(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": user,
+	})
+}
+
+func (c *userController) LogoutUser(ctx *gin.Context) {
+	ctx.SetCookie("Authorization", "", -1, "", "", false, true)
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "user logged out successfully",
 	})
 }
