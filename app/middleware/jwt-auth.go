@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/kajtuszd/cinema-api/app/database"
+	"github.com/kajtuszd/cinema-api/app/initializers"
 	"github.com/kajtuszd/cinema-api/app/models"
 	"net/http"
 	"os"
 	"time"
 )
 
-func JWTAuth(db *database.GormDatabase) gin.HandlerFunc {
+func JWTAuth(db *initializers.GormDatabase) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenStr, err := ctx.Cookie("Authorization")
 		if err != nil {

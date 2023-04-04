@@ -19,3 +19,5 @@ services:
     restart: always
     env_file:
       - .env
+    volumes:
+      - ./scripts/admin.sql:/docker-entrypoint-initdb.d/admin.sql
