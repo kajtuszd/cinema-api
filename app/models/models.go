@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -13,6 +14,12 @@ type User struct {
 	PhoneNumber string `json:"phone" gorm:"type:varchar(20);unique"`
 	Password    string `json:"password" gorm:"not null" validate:"password"`
 	IsModerator bool   `json:"is_moderator" gorm:"default:false"`
+}
+
+type Post struct {
+	gorm.Model
+	Title       string
+	Description string
 }
 
 var ErrUserNotFound = errors.New("user not found")

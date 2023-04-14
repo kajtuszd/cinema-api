@@ -7,17 +7,22 @@ import (
 	"github.com/GoAdminGroup/go-admin/modules/language"
 	"github.com/GoAdminGroup/go-admin/plugins/admin"
 	"github.com/gin-gonic/gin"
+	"github.com/kajtuszd/cinema-api/app/tables"
 	"os"
 )
 
 func ConfigureAdmin(router *gin.Engine) {
 	eng := engine.Default()
 	adminPlugin := admin.NewAdmin(datamodel.Generators)
-	adminPlugin.AddGenerator("user", datamodel.GetUserTable)
-	eng.AddPlugins(adminPlugin)
+
+	adminPlugin.AddGenerator("User", tables.GetUserTable)
+	adminPlugin.AddGenerator("Post", tables.GetPostTable)
 	cfg := loadConfig()
 	_ = eng.AddConfig(&cfg).Use(router)
+	eng.AddPlugins(adminPlugin)
 }
+
+//https://book.go-admin.cn/en/plugins/admin
 
 func loadConfig() config.Config {
 	cfg := config.Config{

@@ -67,7 +67,7 @@ func (db *GormDatabase) Close() error {
 }
 
 func (db *GormDatabase) Migrate() error {
-	err := db.database.AutoMigrate(&models.User{})
+	err := db.database.AutoMigrate(&models.User{}, &models.Post{})
 	if err != nil {
 		panic(err)
 		return err
