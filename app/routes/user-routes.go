@@ -7,7 +7,7 @@ import (
 	"github.com/kajtuszd/cinema-api/app/models/user"
 )
 
-func InitializeRoutes(r *gin.Engine, db *database.GormDatabase) {
+func InitializeUserRoutes(r *gin.Engine, db *database.GormDatabase) {
 	userRepo := user.NewRepository(db.DB())
 	userService := user.NewService(userRepo)
 	userController := user.NewController(userService)

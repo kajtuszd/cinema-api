@@ -20,10 +20,15 @@ func main() {
 		panic(err)
 	}
 
-	routes.InitializeRoutes(r, db)
+	initializeRoutes(r, db)
 	err = db.Migrate()
 	if err != nil {
 		panic(err)
 	}
 	r.Run()
+}
+
+func initializeRoutes(r *gin.Engine, db *database.GormDatabase) {
+	routes.InitializeUserRoutes(r, db)
+	routes.InitializeMovieRoutes(r, db)
 }
