@@ -3,8 +3,10 @@ package controllers
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/kajtuszd/cinema-api/app/models"
 	"github.com/kajtuszd/cinema-api/app/services"
+	"github.com/kajtuszd/cinema-api/app/validators"
 	"net/http"
 )
 
@@ -24,12 +26,16 @@ type userController struct {
 	userService services.UserService
 }
 
+var validate *validator.Validate
+
 type LoginForm struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 func New(service services.UserService) UserController {
+	validate = validator.New()
+	validate.RegisterValidation("password", validators.PasswordValidator)
 	return &userController{
 		userService: service,
 	}
@@ -68,6 +74,10 @@ func (c *userController) GetAllUsers(ctx *gin.Context) {
 func (c *userController) CreateUser(ctx *gin.Context) {
 	var user models.User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := validate.Struct(user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -115,6 +125,10 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := validate.Struct(user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

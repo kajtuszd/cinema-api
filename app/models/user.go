@@ -11,7 +11,7 @@ type User struct {
 	LastName    string `json:"last_name" gorm:"not null" validate:"max=30"`
 	Email       string `json:"email" gorm:"not null;email;unique"`
 	PhoneNumber string `json:"phone" gorm:"type:varchar(20);unique"`
-	Password    string `json:"password" gorm:"not null" validate:"password"`
+	Password    string `json:"password" gorm:"not null" validate:"required,password"`
 	IsModerator bool   `json:"is_moderator" gorm:"default:false"`
 }
 
