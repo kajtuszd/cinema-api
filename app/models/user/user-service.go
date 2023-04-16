@@ -1,8 +1,6 @@
 package user
 
-import (
-	"github.com/kajtuszd/cinema-api/app/utils"
-)
+import "github.com/kajtuszd/cinema-api/app/utils"
 
 type UserService interface {
 	CreateUser(user User) error
@@ -52,6 +50,6 @@ func (service *userService) CheckLogin(username, password string) (string, error
 	if !utils.CheckPasswordHash(password, user.Password) {
 		return token, utils.PasswordMismatchError
 	}
-	token, err = utils.GenerateToken(user)
+	token, err = GenerateToken(user)
 	return token, err
 }
