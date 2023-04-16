@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/kajtuszd/cinema-api/app/models"
+	"github.com/kajtuszd/cinema-api/app/models/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
@@ -67,7 +67,7 @@ func (db *GormDatabase) Close() error {
 }
 
 func (db *GormDatabase) Migrate() error {
-	err := db.database.AutoMigrate(&models.User{})
+	err := db.database.AutoMigrate(&user.User{})
 	if err != nil {
 		panic(err)
 		return err

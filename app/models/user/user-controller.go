@@ -1,11 +1,9 @@
-package controllers
+package user
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/kajtuszd/cinema-api/app/models"
-	"github.com/kajtuszd/cinema-api/app/services"
 	"github.com/kajtuszd/cinema-api/app/validators"
 	"net/http"
 )
@@ -23,7 +21,7 @@ type UserController interface {
 }
 
 type userController struct {
-	userService services.UserService
+	userService UserService
 }
 
 var validate *validator.Validate
@@ -33,7 +31,7 @@ type LoginForm struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func New(service services.UserService) UserController {
+func NewController(service UserService) UserController {
 	validate = validator.New()
 	validate.RegisterValidation("password", validators.PasswordValidator)
 	return &userController{
@@ -43,8 +41,8 @@ func New(service services.UserService) UserController {
 
 func (c *userController) handleUserError(ctx *gin.Context, err error) error {
 	if err != nil {
-		if errors.Is(err, models.ErrUserNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": models.ErrUserNotFound.Error()})
+		if errors.Is(err, ErrUserNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": ErrUserNotFound.Error()})
 			return err
 		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -72,7 +70,7 @@ func (c *userController) GetAllUsers(ctx *gin.Context) {
 }
 
 func (c *userController) CreateUser(ctx *gin.Context) {
-	var user models.User
+	var user User
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

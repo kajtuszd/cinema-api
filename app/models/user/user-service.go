@@ -1,48 +1,45 @@
-package services
+package user
 
 import (
-	"github.com/kajtuszd/cinema-api/app/models"
-	"github.com/kajtuszd/cinema-api/app/repositories"
 	"github.com/kajtuszd/cinema-api/app/utils"
-	//"gorm.io/gorm"
 )
 
 type UserService interface {
-	CreateUser(user models.User) error
-	UpdateUser(user models.User) error
-	DeleteUser(user models.User) error
-	GetByUsername(username string) (*models.User, error)
-	GetAllUsers() ([]models.User, error)
+	CreateUser(user User) error
+	UpdateUser(user User) error
+	DeleteUser(user User) error
+	GetByUsername(username string) (*User, error)
+	GetAllUsers() ([]User, error)
 	CheckLogin(username, password string) (string, error)
 }
 
 type userService struct {
-	userRepo repositories.UserRepository
+	userRepo UserRepository
 }
 
-func New(userRepo repositories.UserRepository) UserService {
+func NewService(userRepo UserRepository) UserService {
 	return &userService{
 		userRepo: userRepo,
 	}
 }
 
-func (service *userService) CreateUser(user models.User) error {
+func (service *userService) CreateUser(user User) error {
 	return service.userRepo.Save(user)
 }
 
-func (service *userService) UpdateUser(user models.User) error {
+func (service *userService) UpdateUser(user User) error {
 	return service.userRepo.Update(user)
 }
 
-func (service *userService) DeleteUser(user models.User) error {
+func (service *userService) DeleteUser(user User) error {
 	return service.userRepo.Delete(user)
 }
 
-func (service *userService) GetByUsername(username string) (*models.User, error) {
+func (service *userService) GetByUsername(username string) (*User, error) {
 	return service.userRepo.GetByUsername(username)
 }
 
-func (service *userService) GetAllUsers() ([]models.User, error) {
+func (service *userService) GetAllUsers() ([]User, error) {
 	return service.userRepo.GetAll()
 }
 
