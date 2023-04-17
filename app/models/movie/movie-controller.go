@@ -3,6 +3,7 @@ package movie
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
@@ -17,11 +18,13 @@ type MovieController interface {
 
 type movieController struct {
 	movieService MovieService
+	validator    *validator.Validate
 }
 
-func NewController(service MovieService) MovieController {
+func NewController(service MovieService, validator *validator.Validate) MovieController {
 	return &movieController{
 		movieService: service,
+		validator:    validator,
 	}
 }
 
@@ -61,6 +64,10 @@ func (c *movieController) CreateMovie(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if err := c.validator.Struct(movie); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	if err := c.movieService.CreateMovie(movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -87,6 +94,10 @@ func (c *movieController) UpdateMovie(ctx *gin.Context) {
 		return
 	}
 	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := c.validator.Struct(user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
