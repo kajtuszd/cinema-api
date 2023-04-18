@@ -43,20 +43,20 @@ func (c *movieController) handleError(ctx *gin.Context, err error) error {
 
 func (c *movieController) GetMovie(ctx *gin.Context) {
 	id := ctx.Param("id")
-	user, err := c.movieService.GetByID(id)
+	movie, err := c.movieService.GetByID(id)
 	if err = c.handleError(ctx, err); err != nil {
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"data": user})
+	ctx.JSON(http.StatusOK, gin.H{"data": movie})
 }
 
 func (c *movieController) GetAllMovies(ctx *gin.Context) {
-	users, err := c.movieService.GetAllMovies()
+	movies, err := c.movieService.GetAllMovies()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"data": users})
+	ctx.JSON(http.StatusOK, gin.H{"data": movies})
 }
 
 func (c *movieController) CreateMovie(ctx *gin.Context) {
@@ -69,7 +69,7 @@ func (c *movieController) CreateMovie(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.movieService.CreateMovie(movie); err != nil {
+	if err := c.movieService.CreateMovie(&movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -77,11 +77,11 @@ func (c *movieController) CreateMovie(ctx *gin.Context) {
 
 func (c *movieController) DeleteMovie(ctx *gin.Context) {
 	id := ctx.Param("id")
-	user, err := c.movieService.GetByID(id)
+	movie, err := c.movieService.GetByID(id)
 	if err = c.handleError(ctx, err); err != nil {
 		return
 	}
-	if err = c.movieService.DeleteMovie(*user); err != nil {
+	if err = c.movieService.DeleteMovie(movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -90,19 +90,19 @@ func (c *movieController) DeleteMovie(ctx *gin.Context) {
 
 func (c *movieController) UpdateMovie(ctx *gin.Context) {
 	id := ctx.Param("id")
-	user, err := c.movieService.GetByID(id)
+	movie, err := c.movieService.GetByID(id)
 	if err = c.handleError(ctx, err); err != nil {
 		return
 	}
-	if err := ctx.ShouldBindJSON(&user); err != nil {
+	if err := ctx.ShouldBindJSON(&movie); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.validator.Struct(user); err != nil {
+	if err := c.validator.Struct(movie); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = c.movieService.UpdateMovie(*user); err != nil {
+	if err = c.movieService.UpdateMovie(movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
