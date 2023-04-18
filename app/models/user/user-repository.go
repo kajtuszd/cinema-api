@@ -2,43 +2,37 @@ package user
 
 import (
 	"errors"
+	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/utils"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	Save(user User) error
-	Update(user User) error
-	Delete(user User) error
 	GetByUsername(username string) (*User, error)
 	GetAll() ([]User, error)
+	entity.Repository
 }
 
 type userRepository struct {
+	entity.Repository
 	db *gorm.DB
 }
 
 func NewRepository(db *gorm.DB) UserRepository {
 	return &userRepository{
-		db: db,
+		Repository: entity.NewRepository(db),
+		db:         db,
 	}
 }
 
-func (r *userRepository) Save(user User) error {
+func (r *userRepository) Save(entity interface{}) error {
+	user := entity.(User)
 	hash, _ := utils.HashPassword(user.Password)
 	if !utils.CheckPasswordHash(user.Password, hash) {
 		return utils.PasswordHashError
 	}
 	user.Password = hash
 	return r.db.Create(&user).Error
-}
-
-func (r *userRepository) Update(user User) error {
-	return r.db.Save(&user).Error
-}
-
-func (r *userRepository) Delete(user User) error {
-	return r.db.Delete(&user).Error
 }
 
 func (r *userRepository) GetByUsername(username string) (*User, error) {
