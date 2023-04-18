@@ -21,10 +21,11 @@ type movieController struct {
 	validator    *validator.Validate
 }
 
-func NewController(service MovieService, validator *validator.Validate) MovieController {
+func NewController(service MovieService) MovieController {
+	v := validator.New()
 	return &movieController{
 		movieService: service,
-		validator:    validator,
+		validator:    v,
 	}
 }
 
