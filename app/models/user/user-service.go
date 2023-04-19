@@ -1,36 +1,27 @@
 package user
 
-import "github.com/kajtuszd/cinema-api/app/utils"
+import (
+	"github.com/kajtuszd/cinema-api/app/models/entity"
+	"github.com/kajtuszd/cinema-api/app/utils"
+)
 
 type UserService interface {
-	CreateUser(user User) error
-	UpdateUser(user User) error
-	DeleteUser(user User) error
 	GetByUsername(username string) (*User, error)
 	GetAllUsers() ([]User, error)
 	CheckLogin(username, password string) (string, error)
+	entity.Service
 }
 
 type userService struct {
 	userRepo UserRepository
+	entity.Service
 }
 
 func NewService(userRepo UserRepository) UserService {
 	return &userService{
+		Service:  entity.NewService(userRepo),
 		userRepo: userRepo,
 	}
-}
-
-func (service *userService) CreateUser(user User) error {
-	return service.userRepo.Save(user)
-}
-
-func (service *userService) UpdateUser(user User) error {
-	return service.userRepo.Update(user)
-}
-
-func (service *userService) DeleteUser(user User) error {
-	return service.userRepo.Delete(user)
 }
 
 func (service *userService) GetByUsername(username string) (*User, error) {

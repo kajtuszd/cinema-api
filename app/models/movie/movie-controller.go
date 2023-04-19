@@ -69,7 +69,7 @@ func (c *movieController) CreateMovie(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.movieService.CreateMovie(&movie); err != nil {
+	if err := c.movieService.Create(&movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -81,7 +81,7 @@ func (c *movieController) DeleteMovie(ctx *gin.Context) {
 	if err = c.handleError(ctx, err); err != nil {
 		return
 	}
-	if err = c.movieService.DeleteMovie(movie); err != nil {
+	if err = c.movieService.Delete(movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -102,7 +102,7 @@ func (c *movieController) UpdateMovie(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = c.movieService.UpdateMovie(movie); err != nil {
+	if err = c.movieService.Update(movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

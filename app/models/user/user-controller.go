@@ -79,7 +79,7 @@ func (c *userController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.userService.CreateUser(user); err != nil {
+	if err := c.userService.Create(user); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -109,7 +109,7 @@ func (c *userController) DeleteUser(ctx *gin.Context) {
 	if err = c.handleUserError(ctx, err); err != nil {
 		return
 	}
-	if err = c.userService.DeleteUser(*user); err != nil {
+	if err = c.userService.Delete(*user); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -130,7 +130,7 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = c.userService.UpdateUser(*user); err != nil {
+	if err = c.userService.Update(*user); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

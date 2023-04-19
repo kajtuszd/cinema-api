@@ -1,33 +1,23 @@
 package movie
 
+import "github.com/kajtuszd/cinema-api/app/models/entity"
+
 type MovieService interface {
-	CreateMovie(movie *Movie) error
-	UpdateMovie(movie *Movie) error
-	DeleteMovie(movie *Movie) error
 	GetByID(id string) (*Movie, error)
 	GetAllMovies() ([]Movie, error)
+	entity.Service
 }
 
 type movieService struct {
 	movieRepo MovieRepository
+	entity.Service
 }
 
 func NewService(movieRepo MovieRepository) MovieService {
 	return &movieService{
+		Service:   entity.NewService(movieRepo),
 		movieRepo: movieRepo,
 	}
-}
-
-func (service *movieService) CreateMovie(movie *Movie) error {
-	return service.movieRepo.Save(movie)
-}
-
-func (service *movieService) UpdateMovie(movie *Movie) error {
-	return service.movieRepo.Update(movie)
-}
-
-func (service *movieService) DeleteMovie(movie *Movie) error {
-	return service.movieRepo.Delete(movie)
 }
 
 func (service *movieService) GetByID(id string) (*Movie, error) {
