@@ -73,6 +73,7 @@ func (c *movieController) CreateMovie(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	ctx.JSON(http.StatusCreated, gin.H{"movie": movie})
 }
 
 func (c *movieController) DeleteMovie(ctx *gin.Context) {

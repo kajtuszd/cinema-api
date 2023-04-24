@@ -73,6 +73,7 @@ func (c *hallController) CreateHall(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	ctx.JSON(http.StatusCreated, gin.H{"hall": hall})
 }
 
 func (c *hallController) DeleteHall(ctx *gin.Context) {
