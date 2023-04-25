@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kajtuszd/cinema-api/app/models/hall"
 	"github.com/kajtuszd/cinema-api/app/models/movie"
+	"github.com/kajtuszd/cinema-api/app/models/seat"
 	"github.com/kajtuszd/cinema-api/app/models/show"
 	"github.com/kajtuszd/cinema-api/app/models/user"
 	"gorm.io/driver/postgres"
@@ -70,7 +71,7 @@ func (db *GormDatabase) Close() error {
 }
 
 func (db *GormDatabase) Migrate() error {
-	err := db.database.AutoMigrate(&user.User{}, &movie.Movie{}, &hall.Hall{}, &show.Show{})
+	err := db.database.AutoMigrate(&user.User{}, &movie.Movie{}, &hall.Hall{}, &show.Show{}, &seat.Seat{})
 	if err != nil {
 		panic(err)
 		return err

@@ -5,6 +5,7 @@ import (
 	"github.com/kajtuszd/cinema-api/app/database"
 	"github.com/kajtuszd/cinema-api/app/models/hall"
 	"github.com/kajtuszd/cinema-api/app/models/movie"
+	"github.com/kajtuszd/cinema-api/app/models/seat"
 	"github.com/kajtuszd/cinema-api/app/models/show"
 )
 
@@ -15,8 +16,11 @@ func InitializeShowRoutes(r *gin.Engine, db *database.GormDatabase) {
 	movieService := movie.NewService(movieRepo)
 	hallRepo := hall.NewRepository(db.DB())
 	hallService := hall.NewService(hallRepo)
+	seatRepo := seat.NewRepository(db.DB())
+	seatService := seat.NewService(seatRepo)
 
 	showController := show.NewController(showService, movieService, hallService)
+	seatController := seat.NewController(seatService, showService)
 	showRoutes := r.Group("/shows/")
 	{
 		showRoutes.GET("", showController.GetAllShows)
@@ -25,5 +29,7 @@ func InitializeShowRoutes(r *gin.Engine, db *database.GormDatabase) {
 		showRoutes.DELETE(":id", showController.DeleteShow)
 		showRoutes.PUT(":id", showController.UpdateShow)
 		showRoutes.PATCH(":id", showController.UpdateShow)
+		showRoutes.GET(":id/get_seats", seatController.GetSeatsForShow)
+		showRoutes.GET(":id/create_seats", seatController.CreateSeatsForShow)
 	}
 }
