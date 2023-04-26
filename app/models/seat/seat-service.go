@@ -11,6 +11,7 @@ type SeatService interface {
 	GetByID(id string) (*Seat, error)
 	GetSeatsForShow(showID string) ([]Seat, error)
 	CreateSeatsForShow(show show.Show) error
+	DeleteSeatsForShow(showID string) error
 	SetSeatReserved(seat *Seat) error
 	SetSeatAvailable(seat *Seat) error
 	entity.Service
@@ -54,6 +55,19 @@ func (service *seatService) CreateSeatsForShow(show show.Show) error {
 			State:  string(SeatStateAvailable),
 		}
 		if err := service.Create(seat); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (service *seatService) DeleteSeatsForShow(showID string) error {
+	seats, err := service.GetSeatsForShow(showID)
+	if err != nil {
+		return err
+	}
+	for _, seat := range seats {
+		if err = service.Delete(seat); err != nil {
 			return err
 		}
 	}

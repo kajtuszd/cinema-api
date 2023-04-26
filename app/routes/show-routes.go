@@ -31,5 +31,6 @@ func InitializeShowRoutes(r *gin.Engine, db *database.GormDatabase) {
 		showRoutes.PATCH(":id", showController.UpdateShow)
 		showRoutes.GET(":id/get_seats", seatController.GetSeatsForShow)
 		showRoutes.GET(":id/create_seats", seatController.CreateSeatsForShow)
+		showRoutes.GET(":id/delete_seats", seatController.DeleteSeatsForShow)
 	}
 }

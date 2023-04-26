@@ -12,6 +12,7 @@ type SeatController interface {
 	GetSeat(ctx *gin.Context)
 	GetSeatsForShow(ctx *gin.Context)
 	CreateSeatsForShow(ctx *gin.Context)
+	DeleteSeatsForShow(ctx *gin.Context)
 	handleError(ctx *gin.Context, err error) error
 }
 
@@ -88,4 +89,13 @@ func (c *seatController) CreateSeatsForShow(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "successfully created seats"})
+}
+
+func (c *seatController) DeleteSeatsForShow(ctx *gin.Context) {
+	showID := ctx.Param("id")
+	if err := c.seatService.DeleteSeatsForShow(showID); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "successfully deleted seats"})
 }
