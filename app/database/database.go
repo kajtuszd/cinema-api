@@ -7,6 +7,7 @@ import (
 	"github.com/kajtuszd/cinema-api/app/models/movie"
 	"github.com/kajtuszd/cinema-api/app/models/seat"
 	"github.com/kajtuszd/cinema-api/app/models/show"
+	"github.com/kajtuszd/cinema-api/app/models/ticket"
 	"github.com/kajtuszd/cinema-api/app/models/user"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -71,7 +72,7 @@ func (db *GormDatabase) Close() error {
 }
 
 func (db *GormDatabase) Migrate() error {
-	err := db.database.AutoMigrate(&user.User{}, &movie.Movie{}, &hall.Hall{}, &show.Show{}, &seat.Seat{})
+	err := db.database.AutoMigrate(&user.User{}, &movie.Movie{}, &hall.Hall{}, &show.Show{}, &seat.Seat{}, &ticket.Ticket{})
 	if err != nil {
 		panic(err)
 		return err

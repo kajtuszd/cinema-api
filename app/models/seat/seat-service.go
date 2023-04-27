@@ -14,6 +14,7 @@ type SeatService interface {
 	DeleteSeatsForShow(showID string) error
 	SetSeatReserved(seat *Seat) error
 	SetSeatAvailable(seat *Seat) error
+	IsSeatReserved(seat *Seat) bool
 	entity.Service
 }
 
@@ -82,4 +83,8 @@ func (service *seatService) SetSeatReserved(seat *Seat) error {
 func (service *seatService) SetSeatAvailable(seat *Seat) error {
 	seat.State = string(SeatStateAvailable)
 	return service.Update(seat)
+}
+
+func (service *seatService) IsSeatReserved(seat *Seat) bool {
+	return seat.State == string(SeatStateReserved)
 }

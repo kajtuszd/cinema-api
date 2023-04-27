@@ -90,7 +90,6 @@ func (c *showController) CreateShow(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-
 	show := &Show{
 		ID:        uint(uuid.New().ID()),
 		MovieID:   input.MovieID,
@@ -155,7 +154,6 @@ func (c *showController) UpdateShow(ctx *gin.Context) {
 	if !input.StartTime.IsZero() {
 		show.StartTime = input.StartTime
 	}
-
 	if err := c.validator.Struct(show); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

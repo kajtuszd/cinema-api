@@ -6,7 +6,7 @@ import (
 )
 
 type Seat struct {
-	ID     uint `json:"-" gorm:"primaryKey"`
+	ID     uint `json:"id" gorm:"primaryKey"`
 	ShowID uint
 	Show   show.Show `json:"show" gorm:"foreignkey:ShowID"`
 	State  string    `json:"state" gorm:"not null"`

@@ -26,7 +26,11 @@ func NewRepository(db *gorm.DB) SeatRepository {
 
 func (s *seatRepository) GetByID(id string) (*Seat, error) {
 	var seat Seat
-	err := s.db.Where("id = ?", id).Preload("Show").First(&seat).Error
+	err := s.db.Where("id = ?", id).
+		Preload("Show").
+		Preload("Show.Hall").
+		Preload("Show.Movie").
+		First(&seat).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrSeatNotFound
@@ -38,7 +42,11 @@ func (s *seatRepository) GetByID(id string) (*Seat, error) {
 
 func (s *seatRepository) GetAll() ([]Seat, error) {
 	var seats []Seat
-	if err := s.db.Preload("Show").Preload("Show.Hall").Preload("Show.Movie").Find(&seats).Error; err != nil {
+	if err := s.db.
+		Preload("Show").
+		Preload("Show.Hall").
+		Preload("Show.Movie").
+		Find(&seats).Error; err != nil {
 		return nil, err
 	}
 	return seats, nil
