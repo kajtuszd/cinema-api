@@ -30,7 +30,5 @@ func main() {
 
 func initializeRoutes(r *gin.Engine, db *database.GormDatabase) {
 	routes.InitializeUserRoutes(r, db)
-	routes.InitializeMovieRoutes(r, db)
-	routes.InitializeHallRoutes(r, db)
-	routes.InitializeShowRoutes(r, db)
+	routes.InitializeCinemaRoutes(r, db)
 }
