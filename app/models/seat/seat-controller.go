@@ -1,9 +1,9 @@
 package seat
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/models/show"
 	"net/http"
 )
@@ -13,13 +13,14 @@ type SeatController interface {
 	GetSeatsForShow(ctx *gin.Context)
 	CreateSeatsForShow(ctx *gin.Context)
 	DeleteSeatsForShow(ctx *gin.Context)
-	handleError(ctx *gin.Context, err error) error
+	entity.Controller
 }
 
 type seatController struct {
 	seatService SeatService
 	showService show.ShowService
 	validator   *validator.Validate
+	entity.Controller
 }
 
 func NewController(seatServ SeatService, showServ show.ShowService) SeatController {
@@ -28,6 +29,7 @@ func NewController(seatServ SeatService, showServ show.ShowService) SeatControll
 		seatService: seatServ,
 		showService: showServ,
 		validator:   v,
+		Controller:  entity.NewController(),
 	}
 }
 
@@ -36,22 +38,10 @@ type SeatInput struct {
 	State  string `json:"state"`
 }
 
-func (c *seatController) handleError(ctx *gin.Context, err error) error {
-	if err != nil {
-		if errors.Is(err, ErrSeatNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ErrSeatNotFound.Error()})
-			return err
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-	return nil
-}
-
 func (c *seatController) GetSeat(ctx *gin.Context) {
 	id := ctx.Param("id")
 	seat, err := c.seatService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrSeatNotFound); err != nil {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": seat})

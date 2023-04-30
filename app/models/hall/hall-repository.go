@@ -8,6 +8,8 @@ import (
 
 type HallRepository interface {
 	GetByID(id string) (*Hall, error)
+	GetByNumber(hallNumber string) (*Hall, error)
+	ExistsByNumber(number string) bool
 	GetAll() ([]Hall, error)
 	entity.Repository
 }
@@ -34,6 +36,26 @@ func (r *hallRepository) GetByID(id string) (*Hall, error) {
 		return nil, err
 	}
 	return &hall, nil
+}
+
+func (r *hallRepository) GetByNumber(hallNumber string) (*Hall, error) {
+	var hall Hall
+	err := r.db.Where("hall_number = ?", hallNumber).First(&hall).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrHallNotFound
+		}
+		return nil, err
+	}
+	return &hall, nil
+}
+
+func (r *hallRepository) ExistsByNumber(number string) bool {
+	var count int64
+	if err := r.db.Model(&Hall{}).Where("hall_number = ?", number).Count(&count).Error; err != nil {
+		return false
+	}
+	return count > 0
 }
 
 func (r *hallRepository) GetAll() ([]Hall, error) {

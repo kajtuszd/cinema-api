@@ -1,9 +1,9 @@
 package movie
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"net/http"
 )
 
@@ -13,38 +13,26 @@ type MovieController interface {
 	CreateMovie(ctx *gin.Context)
 	DeleteMovie(ctx *gin.Context)
 	UpdateMovie(ctx *gin.Context)
-	handleError(ctx *gin.Context, err error) error
+	entity.Controller
 }
 
 type movieController struct {
 	movieService MovieService
 	validator    *validator.Validate
+	entity.Controller
 }
 
 func NewController(service MovieService) MovieController {
-	v := validator.New()
 	return &movieController{
 		movieService: service,
-		validator:    v,
+		Controller:   entity.NewController(),
 	}
-}
-
-func (c *movieController) handleError(ctx *gin.Context, err error) error {
-	if err != nil {
-		if errors.Is(err, ErrMovieNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ErrMovieNotFound.Error()})
-			return err
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-	return nil
 }
 
 func (c *movieController) GetMovie(ctx *gin.Context) {
 	id := ctx.Param("id")
 	movie, err := c.movieService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrMovieNotFound); err != nil {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": movie})
@@ -61,12 +49,7 @@ func (c *movieController) GetAllMovies(ctx *gin.Context) {
 
 func (c *movieController) CreateMovie(ctx *gin.Context) {
 	var movie Movie
-	if err := ctx.ShouldBindJSON(&movie); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := c.validator.Struct(movie); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if !c.ValidateRequest(ctx, &movie, nil) {
 		return
 	}
 	if err := c.movieService.Create(&movie); err != nil {
@@ -79,7 +62,7 @@ func (c *movieController) CreateMovie(ctx *gin.Context) {
 func (c *movieController) DeleteMovie(ctx *gin.Context) {
 	id := ctx.Param("id")
 	movie, err := c.movieService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrMovieNotFound); err != nil {
 		return
 	}
 	if err = c.movieService.Delete(movie); err != nil {
@@ -90,19 +73,19 @@ func (c *movieController) DeleteMovie(ctx *gin.Context) {
 }
 
 func (c *movieController) UpdateMovie(ctx *gin.Context) {
+	var updatedMovie Movie
 	id := ctx.Param("id")
 	movie, err := c.movieService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrMovieNotFound); err != nil {
 		return
 	}
-	if err := ctx.ShouldBindJSON(&movie); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if !c.ValidateRequest(ctx, &updatedMovie, nil) {
 		return
 	}
-	if err := c.validator.Struct(movie); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	movie.Title = updatedMovie.Title
+	movie.Description = updatedMovie.Description
+	movie.TimeInMinutes = updatedMovie.TimeInMinutes
+	movie.ProductionYear = updatedMovie.ProductionYear
 	if err = c.movieService.Update(movie); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

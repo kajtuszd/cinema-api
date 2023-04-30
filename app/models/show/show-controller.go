@@ -1,11 +1,11 @@
 package show
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/models/hall"
 	"github.com/kajtuszd/cinema-api/app/models/movie"
 	"net/http"
@@ -18,7 +18,7 @@ type ShowController interface {
 	CreateShow(ctx *gin.Context)
 	DeleteShow(ctx *gin.Context)
 	UpdateShow(ctx *gin.Context)
-	handleError(ctx *gin.Context, err error) error
+	entity.Controller
 }
 
 type showController struct {
@@ -26,6 +26,7 @@ type showController struct {
 	movieService movie.MovieService
 	hallService  hall.HallService
 	validator    *validator.Validate
+	entity.Controller
 }
 
 func NewController(s ShowService, m movie.MovieService, h hall.HallService) ShowController {
@@ -35,6 +36,7 @@ func NewController(s ShowService, m movie.MovieService, h hall.HallService) Show
 		movieService: m,
 		hallService:  h,
 		validator:    v,
+		Controller:   entity.NewController(),
 	}
 }
 
@@ -44,22 +46,10 @@ type ShowInput struct {
 	StartTime time.Time `json:"start_time"`
 }
 
-func (c *showController) handleError(ctx *gin.Context, err error) error {
-	if err != nil {
-		if errors.Is(err, ErrShowNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ErrShowNotFound.Error()})
-			return err
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-	return nil
-}
-
 func (c *showController) GetShow(ctx *gin.Context) {
 	id := ctx.Param("id")
 	show, err := c.showService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrShowNotFound); err != nil {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": show})
@@ -112,7 +102,7 @@ func (c *showController) CreateShow(ctx *gin.Context) {
 func (c *showController) DeleteShow(ctx *gin.Context) {
 	id := ctx.Param("id")
 	show, err := c.showService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrShowNotFound); err != nil {
 		return
 	}
 	if err = c.showService.Delete(show); err != nil {
@@ -126,7 +116,7 @@ func (c *showController) UpdateShow(ctx *gin.Context) {
 	var input ShowInput
 	id := ctx.Param("id")
 	show, err := c.showService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrShowNotFound); err != nil {
 		return
 	}
 	if err := ctx.ShouldBindJSON(&input); err != nil {

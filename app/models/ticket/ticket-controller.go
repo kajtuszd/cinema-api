@@ -1,11 +1,11 @@
 package ticket
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/models/seat"
 	"github.com/kajtuszd/cinema-api/app/models/user"
 	"github.com/kajtuszd/cinema-api/app/validators"
@@ -19,7 +19,7 @@ type TicketController interface {
 	CreateTicket(ctx *gin.Context)
 	DeleteTicket(ctx *gin.Context)
 	UpdateTicket(ctx *gin.Context)
-	handleError(ctx *gin.Context, err error) error
+	entity.Controller
 }
 
 type ticketController struct {
@@ -27,6 +27,7 @@ type ticketController struct {
 	userService   user.UserService
 	seatService   seat.SeatService
 	validator     *validator.Validate
+	entity.Controller
 }
 
 func NewController(t TicketService, u user.UserService, s seat.SeatService) TicketController {
@@ -37,6 +38,7 @@ func NewController(t TicketService, u user.UserService, s seat.SeatService) Tick
 		userService:   u,
 		seatService:   s,
 		validator:     v,
+		Controller:    entity.NewController(),
 	}
 }
 
@@ -44,22 +46,10 @@ type TicketInput struct {
 	SeatID uint `json:"seat_id"`
 }
 
-func (c *ticketController) handleError(ctx *gin.Context, err error) error {
-	if err != nil {
-		if errors.Is(err, ErrTicketNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ErrTicketNotFound.Error()})
-			return err
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-	return nil
-}
-
 func (c *ticketController) GetTicket(ctx *gin.Context) {
 	id := ctx.Param("id")
 	ticket, err := c.ticketService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrTicketNotFound); err != nil {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": ticket})
@@ -131,7 +121,7 @@ func (c *ticketController) CreateTicket(ctx *gin.Context) {
 func (c *ticketController) DeleteTicket(ctx *gin.Context) {
 	id := ctx.Param("id")
 	ticket, err := c.ticketService.GetByID(id)
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrTicketNotFound); err != nil {
 		return
 	}
 	if err = c.ticketService.Delete(ticket); err != nil {
@@ -150,7 +140,7 @@ func (c *ticketController) UpdateTicket(ctx *gin.Context) {
 	id := ctx.Param("id")
 	ticket, err := c.ticketService.GetByID(id)
 	oldSeat := ticket.Seat
-	if err = c.handleError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrTicketNotFound); err != nil {
 		return
 	}
 	if err := ctx.ShouldBindJSON(&input); err != nil {

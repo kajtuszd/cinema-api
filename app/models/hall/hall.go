@@ -9,3 +9,4 @@ type Hall struct {
 }
 
 var ErrHallNotFound = errors.New("hall not found")
+var ErrBadHallNumber = errors.New("hall with given number already exists")

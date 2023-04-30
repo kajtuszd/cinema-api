@@ -6,7 +6,9 @@ import (
 
 type HallService interface {
 	GetByID(id string) (*Hall, error)
+	GetByNumber(number string) (*Hall, error)
 	GetAllHalls() ([]Hall, error)
+	ExistsByNumber(id string) bool
 	entity.Service
 }
 
@@ -26,6 +28,14 @@ func (service *hallService) GetByID(id string) (*Hall, error) {
 	return service.hallRepo.GetByID(id)
 }
 
+func (service *hallService) GetByNumber(number string) (*Hall, error) {
+	return service.hallRepo.GetByNumber(number)
+}
+
 func (service *hallService) GetAllHalls() ([]Hall, error) {
 	return service.hallRepo.GetAll()
+}
+
+func (service *hallService) ExistsByNumber(id string) bool {
+	return service.hallRepo.ExistsByNumber(id)
 }
