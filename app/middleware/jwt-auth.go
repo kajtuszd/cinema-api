@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kajtuszd/cinema-api/app/database"
-	"github.com/kajtuszd/cinema-api/app/models"
+	"github.com/kajtuszd/cinema-api/app/models/user"
 	"net/http"
 	"os"
 	"time"
@@ -29,14 +29,14 @@ func JWTAuth(db *database.GormDatabase) gin.HandlerFunc {
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			var user models.User
-			db.DB().First(&user, claims["sub"])
+			var u user.User
+			db.DB().First(&u, claims["sub"])
 
-			if user.ID == 0 {
+			if u.ID == 0 {
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			ctx.Set("user", user)
+			ctx.Set("user", u)
 			ctx.Next()
 		} else {
 			ctx.AbortWithStatus(http.StatusUnauthorized)

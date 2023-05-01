@@ -2,17 +2,15 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/kajtuszd/cinema-api/app/controllers"
 	"github.com/kajtuszd/cinema-api/app/database"
 	"github.com/kajtuszd/cinema-api/app/middleware"
-	"github.com/kajtuszd/cinema-api/app/repositories"
-	"github.com/kajtuszd/cinema-api/app/services"
+	"github.com/kajtuszd/cinema-api/app/models/user"
 )
 
-func InitializeRoutes(r *gin.Engine, db *database.GormDatabase) {
-	userRepo := repositories.New(db.DB())
-	userService := services.New(userRepo)
-	userController := controllers.New(userService)
+func InitializeUserRoutes(r *gin.Engine, db *database.GormDatabase) {
+	userRepo := user.NewRepository(db.DB())
+	userService := user.NewService(userRepo)
+	userController := user.NewController(userService)
 	authRoutes := r.Group("/auth/")
 	{
 		authRoutes.POST("login/", userController.LoginUser)
