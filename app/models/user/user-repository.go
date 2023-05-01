@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"github.com/go-playground/validator/v10"
 	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/utils"
 	"gorm.io/gorm"
@@ -10,6 +11,9 @@ import (
 type UserRepository interface {
 	GetByUsername(username string) (*User, error)
 	GetAll() ([]User, error)
+	UniqueUsernameValidator(fl validator.FieldLevel) bool
+	UniquePhoneValidator(fl validator.FieldLevel) bool
+	UniqueEmailValidator(fl validator.FieldLevel) bool
 	entity.Repository
 }
 
@@ -53,4 +57,22 @@ func (r *userRepository) GetAll() ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (r *userRepository) UniqueUsernameValidator(fl validator.FieldLevel) bool {
+	var count int64
+	r.db.Model(&User{}).Where("username = ?", fl.Field().String()).Count(&count)
+	return count == 0
+}
+
+func (r *userRepository) UniquePhoneValidator(fl validator.FieldLevel) bool {
+	var count int64
+	r.db.Model(&User{}).Where("phone_number = ?", fl.Field().String()).Count(&count)
+	return count == 0
+}
+
+func (r *userRepository) UniqueEmailValidator(fl validator.FieldLevel) bool {
+	var count int64
+	r.db.Model(&User{}).Where("email = ?", fl.Field().String()).Count(&count)
+	return count == 0
 }

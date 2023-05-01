@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/utils"
 )
@@ -9,6 +10,9 @@ type UserService interface {
 	GetByUsername(username string) (*User, error)
 	GetAllUsers() ([]User, error)
 	CheckLogin(username, password string) (string, error)
+	UniquePhoneValidator(fl validator.FieldLevel) bool
+	UniqueUsernameValidator(fl validator.FieldLevel) bool
+	UniqueEmailValidator(fl validator.FieldLevel) bool
 	entity.Service
 }
 
@@ -43,4 +47,16 @@ func (service *userService) CheckLogin(username, password string) (string, error
 	}
 	token, err = GenerateToken(user)
 	return token, err
+}
+
+func (service *userService) UniquePhoneValidator(fl validator.FieldLevel) bool {
+	return service.userRepo.UniquePhoneValidator(fl)
+}
+
+func (service *userService) UniqueUsernameValidator(fl validator.FieldLevel) bool {
+	return service.userRepo.UniqueUsernameValidator(fl)
+}
+
+func (service *userService) UniqueEmailValidator(fl validator.FieldLevel) bool {
+	return service.userRepo.UniqueEmailValidator(fl)
 }

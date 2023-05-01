@@ -1,9 +1,9 @@
 package user
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/validators"
 	"net/http"
 )
@@ -15,46 +15,39 @@ type UserController interface {
 	LoginUser(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
 	UpdateUser(ctx *gin.Context)
-	handleUserError(ctx *gin.Context, err error) error
 	Validate(ctx *gin.Context)
 	LogoutUser(ctx *gin.Context)
-}
-
-type userController struct {
-	userService UserService
+	entity.Controller
 }
 
 var validate *validator.Validate
 
+type userController struct {
+	userService UserService
+	entity.Controller
+}
+
 type LoginForm struct {
 	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Password string `json:"password" binding:"required" validate:"password"`
 }
 
 func NewController(service UserService) UserController {
 	validate = validator.New()
 	validate.RegisterValidation("password", validators.PasswordValidator)
+	validate.RegisterValidation("unique_username", service.UniqueUsernameValidator)
+	validate.RegisterValidation("unique_phone", service.UniquePhoneValidator)
+	validate.RegisterValidation("unique_email", service.UniqueEmailValidator)
 	return &userController{
 		userService: service,
+		Controller:  entity.NewController(),
 	}
-}
-
-func (c *userController) handleUserError(ctx *gin.Context, err error) error {
-	if err != nil {
-		if errors.Is(err, ErrUserNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": ErrUserNotFound.Error()})
-			return err
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return err
-	}
-	return nil
 }
 
 func (c *userController) GetUser(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := c.userService.GetByUsername(username)
-	if err = c.handleUserError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrUserNotFound); err != nil {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": user})
@@ -83,6 +76,7 @@ func (c *userController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	ctx.JSON(http.StatusCreated, gin.H{"user": user})
 }
 
 func (c *userController) LoginUser(ctx *gin.Context) {
@@ -106,7 +100,7 @@ func (c *userController) LoginUser(ctx *gin.Context) {
 func (c *userController) DeleteUser(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := c.userService.GetByUsername(username)
-	if err = c.handleUserError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrUserNotFound); err != nil {
 		return
 	}
 	if err = c.userService.Delete(*user); err != nil {
@@ -119,7 +113,7 @@ func (c *userController) DeleteUser(ctx *gin.Context) {
 func (c *userController) UpdateUser(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := c.userService.GetByUsername(username)
-	if err = c.handleUserError(ctx, err); err != nil {
+	if err = c.HandleError(ctx, err, ErrUserNotFound); err != nil {
 		return
 	}
 	if err := ctx.ShouldBindJSON(&user); err != nil {
