@@ -113,6 +113,8 @@ func (c *userController) DeleteUser(ctx *gin.Context) {
 func (c *userController) UpdateUser(ctx *gin.Context) {
 	username := ctx.Param("username")
 	user, err := c.userService.GetByUsername(username)
+	email := user.Email
+	phone := user.PhoneNumber
 	if err = c.HandleError(ctx, err, ErrUserNotFound); err != nil {
 		return
 	}
@@ -123,6 +125,15 @@ func (c *userController) UpdateUser(ctx *gin.Context) {
 	if err := validate.Struct(user); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	if user.Email == "" {
+		user.Email = email
+	}
+	if user.PhoneNumber == "" {
+		user.PhoneNumber = phone
+	}
+	if user.Username == "" {
+		user.Username = username
 	}
 	if err = c.userService.Update(*user); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

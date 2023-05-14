@@ -26,39 +26,40 @@ func InitializeCinemaRoutes(r *gin.Engine, db *database.GormDatabase) {
 	showController := show.NewController(showService, movieService, hallService)
 	seatController := seat.NewController(seatService, showService)
 
-	hallRoutes := r.Group("/halls/")
+	hallRoutes := r.Group("/halls/").Use(middleware.JWTAuth(db))
 	{
 		hallRoutes.GET("", hallController.GetAllHalls)
 		hallRoutes.GET(":id", hallController.GetHall)
-		hallRoutes.POST("", hallController.CreateHall)
-		hallRoutes.DELETE(":id", hallController.DeleteHall)
-		hallRoutes.PUT(":id", hallController.UpdateHall)
+		hallRoutes.POST("", middleware.Moderator(), hallController.CreateHall)
+		hallRoutes.DELETE(":id", middleware.Moderator(), hallController.DeleteHall)
+		hallRoutes.PUT(":id", middleware.Moderator(), hallController.UpdateHall)
 	}
 	movieRoutes := r.Group("/movies/")
 	{
 		movieRoutes.GET("", movieController.GetAllMovies)
 		movieRoutes.GET(":id", movieController.GetMovie)
-		movieRoutes.POST("", movieController.CreateMovie)
-		movieRoutes.DELETE(":id", movieController.DeleteMovie)
-		movieRoutes.PUT(":id", movieController.UpdateMovie)
+		movieRoutes.POST("", middleware.JWTAuth(db), middleware.Moderator(), movieController.CreateMovie)
+		movieRoutes.DELETE(":id", middleware.JWTAuth(db), middleware.Moderator(), movieController.DeleteMovie)
+		movieRoutes.PUT(":id", middleware.JWTAuth(db), middleware.Moderator(), movieController.UpdateMovie)
 	}
 	showRoutes := r.Group("/shows/")
 	{
 		showRoutes.GET("", showController.GetAllShows)
 		showRoutes.GET(":id", showController.GetShow)
-		showRoutes.POST("", showController.CreateShow)
-		showRoutes.DELETE(":id", showController.DeleteShow)
-		showRoutes.PUT(":id", showController.UpdateShow)
-		showRoutes.GET(":id/get_seats", seatController.GetSeatsForShow)
-		showRoutes.GET(":id/create_seats", seatController.CreateSeatsForShow)
-		showRoutes.GET(":id/delete_seats", seatController.DeleteSeatsForShow)
+		showRoutes.POST("", middleware.JWTAuth(db), middleware.Moderator(), showController.CreateShow)
+		showRoutes.DELETE(":id", middleware.JWTAuth(db), middleware.Moderator(), showController.DeleteShow)
+		showRoutes.PUT(":id", middleware.JWTAuth(db), middleware.Moderator(), showController.UpdateShow)
+		showRoutes.GET(":id/get_seats", middleware.JWTAuth(db), seatController.GetSeatsForShow)
+		showRoutes.GET(":id/create_seats", middleware.JWTAuth(db), middleware.Moderator(), seatController.CreateSeatsForShow)
+		showRoutes.GET(":id/delete_seats", middleware.JWTAuth(db), middleware.Moderator(), seatController.DeleteSeatsForShow)
 	}
 	ticketRoutes := r.Group("/tickets/")
 	{
-		ticketRoutes.GET(":id", middleware.JWTAuth(db), ticketController.GetTicket)
+		ticketRoutes.GET(":id", middleware.JWTAuth(db), middleware.TicketOwnerOrModerator(ticketService), ticketController.GetTicket)
 		ticketRoutes.GET("", middleware.JWTAuth(db), ticketController.GetTickets)
+		ticketRoutes.GET("all/", middleware.JWTAuth(db), middleware.Moderator(), ticketController.GetAllTickets)
 		ticketRoutes.POST("", middleware.JWTAuth(db), ticketController.CreateTicket)
-		ticketRoutes.PUT(":id", middleware.JWTAuth(db), ticketController.UpdateTicket)
-		ticketRoutes.DELETE(":id", middleware.JWTAuth(db), ticketController.DeleteTicket)
+		ticketRoutes.PUT(":id", middleware.JWTAuth(db), middleware.TicketOwnerOrModerator(ticketService), ticketController.UpdateTicket)
+		ticketRoutes.DELETE(":id", middleware.JWTAuth(db), middleware.TicketOwnerOrModerator(ticketService), ticketController.DeleteTicket)
 	}
 }

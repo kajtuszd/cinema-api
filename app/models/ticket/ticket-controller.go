@@ -8,7 +8,6 @@ import (
 	"github.com/kajtuszd/cinema-api/app/models/entity"
 	"github.com/kajtuszd/cinema-api/app/models/seat"
 	"github.com/kajtuszd/cinema-api/app/models/user"
-	"github.com/kajtuszd/cinema-api/app/validators"
 	"net/http"
 )
 
@@ -32,7 +31,6 @@ type ticketController struct {
 
 func NewController(t TicketService, u user.UserService, s seat.SeatService) TicketController {
 	v := validator.New()
-	v.RegisterValidation("password", validators.PasswordValidator)
 	return &ticketController{
 		ticketService: t,
 		userService:   u,
@@ -103,11 +101,11 @@ func (c *ticketController) CreateTicket(ctx *gin.Context) {
 		Seat:   *seatObj,
 		Price:  0,
 	}
-	if err := c.validator.Struct(ticket); err != nil {
+	if err := c.validator.StructExcept(ticket, "Owner"); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.ticketService.Create(ticket); err != nil {
+	if err := c.ticketService.Create(&ticket); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -160,7 +158,7 @@ func (c *ticketController) UpdateTicket(ctx *gin.Context) {
 		ticket.SeatID = input.SeatID
 		ticket.Seat = *seatObj
 	}
-	if err := c.validator.Struct(ticket); err != nil {
+	if err := c.validator.StructExcept(ticket, "Owner"); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
