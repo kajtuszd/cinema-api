@@ -8,8 +8,7 @@ import (
 )
 
 func InitializeUserRoutes(r *gin.Engine, db *database.GormDatabase) {
-	userRepo := user.NewRepository(db.DB())
-	userService := user.NewService(userRepo)
+	userService := user.NewService(user.NewRepository(db.DB()))
 	userController := user.NewController(userService)
 	authRoutes := r.Group("/auth/")
 	{
@@ -19,11 +18,10 @@ func InitializeUserRoutes(r *gin.Engine, db *database.GormDatabase) {
 	}
 	userRoutes := r.Group("/users/")
 	{
-		userRoutes.GET("", userController.GetAllUsers)
-		userRoutes.GET(":username", userController.GetUser)
+		userRoutes.GET("", middleware.JWTAuth(db), middleware.Moderator(), userController.GetAllUsers)
+		userRoutes.GET(":username", middleware.JWTAuth(db), middleware.AccountOwnerOrModerator(), userController.GetUser)
 		userRoutes.POST("", userController.CreateUser)
-		userRoutes.DELETE(":username", userController.DeleteUser)
-		userRoutes.PUT(":username", userController.UpdateUser)
-		userRoutes.PATCH(":username", userController.UpdateUser)
+		userRoutes.DELETE(":username", middleware.JWTAuth(db), middleware.AccountOwnerOrModerator(), userController.DeleteUser)
+		userRoutes.PUT(":username", middleware.JWTAuth(db), middleware.AccountOwnerOrModerator(), userController.UpdateUser)
 	}
 }
